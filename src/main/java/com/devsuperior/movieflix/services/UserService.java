@@ -38,9 +38,6 @@ public class UserService implements UserDetailsService{
 		return new UserDTO(entity);
 	}
 	
-
-	
-	
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		
@@ -50,7 +47,7 @@ public class UserService implements UserDetailsService{
 			logger.error("User not found :" + username);
 			throw new UsernameNotFoundException("Email not found");
 		}
-		logger.info("User found" + username);
+		logger.info("User found " + username);
 		return user;
 	}
 
