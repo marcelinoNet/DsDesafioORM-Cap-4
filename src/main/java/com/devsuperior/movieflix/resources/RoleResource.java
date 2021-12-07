@@ -16,45 +16,40 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.devsuperior.movieflix.dto.UserDTO;
-import com.devsuperior.movieflix.dto.UserInsertDTO;
-import com.devsuperior.movieflix.entities.User;
-import com.devsuperior.movieflix.services.AuthService;
-import com.devsuperior.movieflix.services.UserService;
+import com.devsuperior.movieflix.dto.RoleDTO;
+import com.devsuperior.movieflix.services.RoleService;
 
 @RestController
-@RequestMapping(value = "/users")
-public class UserResource {
+@RequestMapping(value = "/roles")
+public class RoleResource {
 	
 	@Autowired
-	private UserService service;
-	
-	@Autowired 
-	private AuthService authService;
+	private RoleService service;
 	
 	@GetMapping
-	public ResponseEntity<Page<UserDTO>> findAllPaged(Pageable pageable){
-		Page<UserDTO> pages = service.findAllPaged(pageable);
+	public ResponseEntity<Page<RoleDTO>> findAllPaged(Pageable pageable){
+		Page<RoleDTO> pages = service.findPagedRoles(pageable);
 		return ResponseEntity.ok().body(pages);
 	}
 	
 	@GetMapping(value = "/{id}")
-	public ResponseEntity<UserDTO> findById(@PathVariable Long id){
-		UserDTO dto = service.findById(id);
+	public ResponseEntity<RoleDTO> findById(@PathVariable Long id){
+		RoleDTO dto = service.findById(id);
 		return ResponseEntity.ok().body(dto);
 	}
 	
 	@PostMapping
-	public ResponseEntity<UserDTO> insert(@RequestBody UserInsertDTO dto){
-		UserDTO newDto = service.insert(dto);
+	public ResponseEntity<RoleDTO> insert(@RequestBody RoleDTO dto){
+		RoleDTO newDto = service.insert(dto);
 		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
 				.buildAndExpand(newDto.getId()).toUri();
 		return ResponseEntity.created(uri).body(newDto);
+		
 	}
 	
 	@PutMapping(value = "/{id}")
-	public ResponseEntity<UserDTO> update(@PathVariable Long id, @RequestBody UserDTO dto){
-		UserDTO newDto = service.update(id, dto);
+	public ResponseEntity<RoleDTO> update (@PathVariable Long id, @RequestBody RoleDTO dto){
+		RoleDTO newDto = service.update(id, dto);
 		return ResponseEntity.ok().body(newDto);
 	}
 	
@@ -64,12 +59,6 @@ public class UserResource {
 		return ResponseEntity.noContent().build();
 	}
 	
-	@GetMapping(value = "/profile") 
-	public ResponseEntity<UserDTO> authenticatedUser(){
-		User entity = authService.authenticated();
-		UserDTO dto = new UserDTO(entity);
-		return ResponseEntity.ok().body(dto);
-	}
 	
 	
 

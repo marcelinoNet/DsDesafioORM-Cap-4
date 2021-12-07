@@ -49,13 +49,12 @@ public class User implements  UserDetails,Serializable{
 	
 	public User() {}
 
-	public User(Long id, String name, String email, String password, List<Review> reviews) {
+	public User(Long id, String name, String email, String password) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.email = email;
 		this.password = password;
-		this.reviews = reviews;
 	}
 
 
@@ -63,6 +62,7 @@ public class User implements  UserDetails,Serializable{
 	public Long getId() {
 		return id;
 	}
+	
 
 	public void setId(Long id) {
 		this.id = id;
@@ -100,6 +100,7 @@ public class User implements  UserDetails,Serializable{
 	public List<Review> getReviews() {
 		return reviews;
 	}
+	
 
 	@Override
 	public int hashCode() {

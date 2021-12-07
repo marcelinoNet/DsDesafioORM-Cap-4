@@ -2,17 +2,26 @@ package com.devsuperior.movieflix.services;
 
 import java.util.Optional;
 
+import javax.persistence.EntityNotFoundException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.devsuperior.movieflix.dto.RoleDTO;
 import com.devsuperior.movieflix.dto.UserDTO;
+import com.devsuperior.movieflix.dto.UserInsertDTO;
+import com.devsuperior.movieflix.entities.Role;
 import com.devsuperior.movieflix.entities.User;
+import com.devsuperior.movieflix.repositories.RoleRepository;
 import com.devsuperior.movieflix.repositories.UserRepository;
 import com.devsuperior.movieflix.services.exceptions.ResourceNotFoundException;
 
@@ -25,7 +34,19 @@ public class UserService implements UserDetailsService{
 	private UserRepository repository;
 	
 	@Autowired
+	private RoleRepository roleRepository;
+	
+	@Autowired
+	private BCryptPasswordEncoder encoder;
+	
+	@Autowired
 	private AuthService authService;
+	
+	@Transactional(readOnly = true)
+	public Page<UserDTO> findAllPaged(Pageable pageable) {
+		Page<User> pages = repository.findAll(pageable);
+		return pages.map((x) -> new UserDTO(x));
+	}
 	
 	
 	@Transactional(readOnly = true)
@@ -38,6 +59,54 @@ public class UserService implements UserDetailsService{
 		return new UserDTO(entity);
 	}
 	
+	@Transactional
+	public UserDTO insert(UserInsertDTO dto) {
+		
+		User entity = new User();
+		convertDtoToEntity(dto, entity);
+		entity.setPassword(encoder.encode(dto.getPassword()));
+		entity = repository.save(entity);
+		
+		return new UserDTO(entity);
+		
+	}
+	
+	@Transactional
+	public UserDTO update(Long id ,UserDTO dto) {
+
+		try {
+			User entity = repository.getOne(id);
+			convertDtoToEntity(dto, entity);
+			entity = repository.save(entity);
+			return new UserDTO(entity);
+			
+		} catch (EntityNotFoundException e) {
+			throw new ResourceNotFoundException("Resource Not found :" + id);
+		}
+		
+	}
+	
+	public void delete(Long id) {
+		try {
+			repository.deleteById(id);
+		} catch (EntityNotFoundException e) {
+			throw new ResourceNotFoundException("Resource Not found :" + id);
+		}
+	}
+	
+	private void convertDtoToEntity(UserDTO dto, User entity) {
+		
+		entity.setName(dto.getName());
+		entity.setEmail(dto.getEmail());
+		
+		entity.getRoles().clear();
+		for (RoleDTO roleDto : dto.getRoles()) {
+			Role role = roleRepository.getOne(roleDto.getId());
+			entity.getRoles().add(role);
+		}
+	}
+
+
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		
